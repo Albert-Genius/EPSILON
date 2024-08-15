@@ -59,7 +59,9 @@ ErrorType BehaviorPlanner::RunOnce() {
   // ~ to implement the following logics.
   // ~ step 1: parse the navigation message if any
   // ~ step 2: decision making on the applicable behavior set
-  // ~ step 3: construct complete semantic bahavior
+  // ~ step 3: construct complete semantic behavior
+
+  // 调用地图相关查询接口,根据当前位姿,(和导航路径:当前实现未依赖这个入参)找到当前车辆所在车道线ID
   int ego_lane_id_by_pos = kInvalidLaneId;
   if (map_itf_->GetEgoLaneIdByPosition(p_route_planner_->navi_path(),
                                        &ego_lane_id_by_pos) != kSuccess) {
@@ -67,6 +69,7 @@ ErrorType BehaviorPlanner::RunOnce() {
     return kWrongStatus;
   }
 
+  // 从 localview中拿到最新的自车信息
   common::Vehicle ego_vehicle;
   if (map_itf_->GetEgoVehicle(&ego_vehicle) != kSuccess) {
     printf("[MPDM]fail to get ego vehicle.\n");
@@ -74,14 +77,18 @@ ErrorType BehaviorPlanner::RunOnce() {
   }
   ego_id_ = ego_vehicle.id();
 
-  if (use_sim_state_) {
+  //如果是仿真模式,使用随机路由选择器生成一条导航路径
+  //结果存放在了类内全局变量内
+  if (use_sim_state_) { 
     RunRoutePlanner(ego_lane_id_by_pos);
   }
 
+  // 根据当前所在车道线横向扩展lane id(首次)
   if (ego_lane_id_ == kInvalidAgentId) {
     UpdateEgoLaneId(ego_lane_id_by_pos);
   }
 
+  // 根据车道线情况生成横向行为
   LateralBehavior behavior_by_lane_id;
   if (JudgeBehaviorByLaneId(ego_lane_id_by_pos, &behavior_by_lane_id) !=
       kSuccess) {
@@ -89,21 +96,24 @@ ErrorType BehaviorPlanner::RunOnce() {
     return kWrongStatus;
   }
 
+  // 根据当前所在车道线横向扩展lane id
   UpdateEgoLaneId(ego_lane_id_by_pos);
   printf("[MPDM]ego lane id: %d.\n", ego_lane_id_);
 
+  // 根据历史行为和车道线拓扑关系生成换道意图
   if (UpdateEgoBehavior(behavior_by_lane_id) != kSuccess) {
     printf("[RunOnce]fail to update ego behavior!\n");
     return kWrongStatus;
   }
-
   if (behavior_.lat_behavior == common::LateralBehavior::kUndefined) {
     // printf("[RunOnce]Err - Undefined system behavior!.\n");
     // ! temporal solution lane keep at the current lane.
     behavior_.lat_behavior = common::LateralBehavior::kLaneKeeping;
   }
 
+  // 获取用户设定的理想速度
   behavior_.actual_desired_velocity = user_desired_velocity_;
+
   if (autonomous_level_ >= 3) {
     TicToc timer;
     planning::MultiModalForward::ParamLookUp(aggressive_level_, &sim_param_);
@@ -724,8 +734,11 @@ ErrorType BehaviorPlanner::ConstructLaneFromSamples(
   return kSuccess;
 }
 
+
+// 优先选择车道保持;然后是左变道;最后是右变道
 ErrorType BehaviorPlanner::JudgeBehaviorByLaneId(
-    const int ego_lane_id_by_pos, LateralBehavior* behavior_by_lane_id) {
+    const int ego_lane_id_by_pos, LateralBehavior* behavior_by_lane_id) 
+{
   if (ego_lane_id_by_pos == ego_lane_id_) {
     *behavior_by_lane_id = common::LateralBehavior::kLaneKeeping;
     return kSuccess;
@@ -810,7 +823,9 @@ ErrorType BehaviorPlanner::UpdateEgoBehavior(
   return kSuccess;
 }
 
-ErrorType BehaviorPlanner::UpdateEgoLaneId(const int new_ego_lane_id) {
+// lane id 横向扩展操作
+ErrorType BehaviorPlanner::UpdateEgoLaneId(const int new_ego_lane_id) 
+{
   ego_lane_id_ = new_ego_lane_id;
   GetPotentialLaneIds(ego_lane_id_, common::LateralBehavior::kLaneKeeping,
                       &potential_lk_lane_ids_);

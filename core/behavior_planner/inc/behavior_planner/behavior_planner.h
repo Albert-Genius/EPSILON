@@ -128,7 +128,7 @@ class BehaviorPlanner : public Planner {
       const vec_E<common::Vehicle> vehicle_vec, decimal_t* vel);
 
   BehaviorPlannerMapItf* map_itf_{nullptr};
-  Behavior behavior_;
+  Behavior behavior_; //保留上一次行为
 
   planning::RoutePlanner* p_route_planner_{nullptr};
 
@@ -136,10 +136,10 @@ class BehaviorPlanner : public Planner {
   decimal_t reference_desired_velocity_{5.0}; // 基于用户设置的巡航速度,考虑道路限速,道路曲率等约束后的目标巡航速度
   int autonomous_level_{2}; //自动驾驶等级L2、L3、L4
 
-  decimal_t sim_resolution_{0.4};
-  decimal_t sim_horizon_{4.0};
+  decimal_t sim_resolution_{0.4}; // 时距内的分辨率(sim_horizon/sim_resolution代表时距内做多少次前向推理)
+  decimal_t sim_horizon_{4.0}; // 时距,单位为秒
   int aggressive_level_{3}; //表征侵略性
-  planning::OnLaneForwardSimulation::Param sim_param_;
+  planning::OnLaneForwardSimulation::Param sim_param_; //横纵向前向推理的参数
 
   bool use_sim_state_ = true;
   bool lock_to_hmi_ = false;

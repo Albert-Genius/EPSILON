@@ -756,9 +756,12 @@ ErrorType SemanticMapManager::IsTopologicallyReachable(
   return kSuccess;
 }
 
+
+// 该函数当前实现未依赖navi_path
 ErrorType SemanticMapManager::GetNearestLaneIdUsingState(
     const Vec3f &state, const std::vector<int> &navi_path, int *id,
-    decimal_t *distance, decimal_t *arc_len) const {
+    decimal_t *distance, decimal_t *arc_len) const 
+{
   // tuple: dist, arc_len, angle_diff, id
   std::set<std::tuple<decimal_t, decimal_t, decimal_t, int>> lanes_in_dist;
   if (GetDistanceToLanesUsing3DofState(state, &lanes_in_dist) != kSuccess) {

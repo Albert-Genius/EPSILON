@@ -230,8 +230,8 @@ struct SemanticBehavior {
   State state;
 
   SemanticBehavior() {
-    lat_behavior = LateralBehavior::kLaneKeeping;
-    lon_behavior = LongitudinalBehavior::kMaintain;
+    lat_behavior = LateralBehavior::kLaneKeeping; // 初始横向行为设定为保持当前车道
+    lon_behavior = LongitudinalBehavior::kMaintain; // 纵向行为设定为保持当前车速
   }
   SemanticBehavior(const LateralBehavior &beh) : lat_behavior(beh) {}
 };

@@ -1,3 +1,4 @@
+/* 用于在地图上随机生成一条导航路径; 仅用于仿真测试 */
 #ifndef _CORE_ROUTE_PLANNER_INC_ROUTE_PLANNER_H_
 #define _CORE_ROUTE_PLANNER_INC_ROUTE_PLANNER_H_
 
@@ -70,7 +71,7 @@ class RoutePlanner : public Planner {
   decimal_t navi_path_length_{0.0};
   decimal_t navi_cur_arc_len_{0.0};
 
-  std::vector<int> navi_path_;
+  std::vector<int> navi_path_; //存储的是lane id数组
   common::Lane navi_lane_;
 
   std::random_device rd_gen_;

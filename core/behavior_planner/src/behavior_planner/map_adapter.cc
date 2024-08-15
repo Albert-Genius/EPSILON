@@ -22,8 +22,9 @@ ErrorType BehaviorPlannerMapAdapter::GetEgoVehicle(common::Vehicle *vehicle) {
   return kSuccess;
 }
 
-ErrorType BehaviorPlannerMapAdapter::GetEgoLaneIdByPosition(
-    const std::vector<int> &navi_path, int *lane_id) {
+ErrorType BehaviorPlannerMapAdapter::GetEgoLaneIdByPosition(const std::vector<int> &navi_path,
+                                                            int *lane_id) 
+{
   if (!is_valid_) {
     printf("[GetEgoLaneIdByPosition]Interface not valid.\n");
     return kWrongStatus;

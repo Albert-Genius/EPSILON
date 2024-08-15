@@ -12,7 +12,7 @@
 #include <chrono>
 #include <iostream>
 
-#include "behavior_planner/behavior_server_ros.h"
+#include "behavior_planner/mpdm_server_ros.h"
 #include "semantic_map_manager/data_renderer.h"
 #include "semantic_map_manager/ros_adapter.h"
 #include "semantic_map_manager/semantic_map_manager.h"

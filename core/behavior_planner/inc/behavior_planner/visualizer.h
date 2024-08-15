@@ -13,7 +13,7 @@
 
 #include "vehicle_msgs/decoder.h"
 
-#include "behavior_planner/behavior_planner.h"
+#include "behavior_planner/mpdm_planner.h"
 #include "common/basics/basics.h"
 #include "common/basics/semantics.h"
 

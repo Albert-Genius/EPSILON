@@ -5,7 +5,7 @@
 #include <iostream>
 #include <random>
 
-#include "behavior_planner/behavior_server_ros.h"
+#include "behavior_planner/mpdm_server_ros.h"
 #include "common/basics/tic_toc.h"
 #include "forward_simulator/multimodal_forward.h"
 #include "forward_simulator/onlane_forward_simulation.h"

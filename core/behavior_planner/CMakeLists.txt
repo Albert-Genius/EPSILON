@@ -37,7 +37,7 @@ include_directories(
 )
 
 add_library(behavior_planner_lib
-    src/behavior_planner/behavior_planner.cc
+    src/behavior_planner/mpdm_planner.cc
     src/behavior_planner/map_adapter.cc
 )
 
@@ -49,7 +49,7 @@ target_link_libraries(behavior_planner_lib
 )
 
 add_library(behavior_planner_ros
-    src/behavior_planner/behavior_server_ros.cc
+    src/behavior_planner/mpdm_server_ros.cc
 )
 
 target_link_libraries(behavior_planner_ros

@@ -7,7 +7,7 @@
 #include <numeric>
 #include <thread>
 
-#include "behavior_planner/behavior_planner.h"
+#include "behavior_planner/mpdm_planner.h"
 #include "behavior_planner/map_adapter.h"
 #include "behavior_planner/visualizer.h"
 #include "semantic_map_manager/semantic_map_manager.h"

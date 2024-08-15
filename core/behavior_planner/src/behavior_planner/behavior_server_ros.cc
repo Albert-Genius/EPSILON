@@ -11,14 +11,17 @@ BehaviorPlannerServer::BehaviorPlannerServer(ros::NodeHandle nh, int ego_id)
 
 BehaviorPlannerServer::BehaviorPlannerServer(ros::NodeHandle nh,
                                              double work_rate, int ego_id)
-    : nh_(nh), work_rate_(work_rate), ego_id_(ego_id) {
+    : nh_(nh), work_rate_(work_rate), ego_id_(ego_id) 
+{
   p_visualizer_ = new BehaviorPlannerVisualizer(nh, &bp_, ego_id);
   p_input_smm_buff_ = new moodycamel::ReaderWriterQueue<SemanticMapManager>(
       config_.kInputBufferSize);
 }
 
+// TODO: 需要做异常处理
 void BehaviorPlannerServer::PushSemanticMap(const SemanticMapManager& smm) {
-  if (p_input_smm_buff_) p_input_smm_buff_->try_enqueue(smm);
+  if (p_input_smm_buff_) 
+    p_input_smm_buff_->try_enqueue(smm);
 }
 
 void BehaviorPlannerServer::PublishData() {
@@ -37,7 +40,9 @@ void BehaviorPlannerServer::Init() {
   p_visualizer_->Init();
 }
 
-void BehaviorPlannerServer::JoyCallback(const sensor_msgs::Joy::ConstPtr& msg) {
+// 实时接收用户控制设置信息（协同驾驶）
+void BehaviorPlannerServer::JoyCallback(const sensor_msgs::Joy::ConstPtr& msg) 
+{
   if (bp_.autonomous_level() < 2) return;
   if (!is_hmi_enabled_) return;
   int msg_id;
@@ -84,35 +89,39 @@ void BehaviorPlannerServer::MainThread() {
   }
 }
 
-void BehaviorPlannerServer::PlanCycleCallback() {
+void BehaviorPlannerServer::PlanCycleCallback() 
+{
   if (p_input_smm_buff_ == nullptr) return;
 
   SemanticMapManager smm;
   bool has_updated_map = false;
+
+  // 丢弃老元素，取最新的元素
   while (p_input_smm_buff_->try_dequeue(smm)) {
     has_updated_map = true;
   }
 
   if (has_updated_map) {
-    auto map_ptr =
-        std::make_shared<semantic_map_manager::SemanticMapManager>(smm);
+    // 将smm注入bp_
+    auto map_ptr = std::make_shared<semantic_map_manager::SemanticMapManager>(smm);
     map_adapter_.set_map(map_ptr);
 
     TicToc timer;
+    // 核心调用：进行规划
     if (bp_.RunOnce() == kSuccess) {
-      smm.set_ego_behavior(bp_.behavior());
+      smm.set_ego_behavior(bp_.behavior()); // 更新自车行为
     }
 
+    // 将计算后的结果发送出去
     if (has_callback_binded_) {
       private_callback_fn_(smm);
     }
-
-    PublishData();
+    PublishData(); // 可视化
   }
 }
 
-void BehaviorPlannerServer::BindBehaviorUpdateCallback(
-    std::function<int(const SemanticMapManager&)> fn) {
+void BehaviorPlannerServer::BindBehaviorUpdateCallback(std::function<int(const SemanticMapManager&)> fn) 
+{
   private_callback_fn_ = std::bind(fn, std::placeholders::_1);
   has_callback_binded_ = true;
 }
@@ -127,8 +136,8 @@ void BehaviorPlannerServer::set_aggressive_level(int level) {
   bp_.set_aggressive_level(level);
 }
 
-void BehaviorPlannerServer::set_user_desired_velocity(
-    const decimal_t desired_vel) {
+void BehaviorPlannerServer::set_user_desired_velocity(const decimal_t desired_vel) 
+{
   bp_.set_user_desired_velocity(desired_vel);
 }
 

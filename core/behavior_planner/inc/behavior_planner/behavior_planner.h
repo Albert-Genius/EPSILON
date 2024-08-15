@@ -132,13 +132,13 @@ class BehaviorPlanner : public Planner {
 
   planning::RoutePlanner* p_route_planner_{nullptr};
 
-  decimal_t user_desired_velocity_{5.0};
-  decimal_t reference_desired_velocity_{5.0};
-  int autonomous_level_{2};
+  decimal_t user_desired_velocity_{5.0}; // 用户设置的巡航速度
+  decimal_t reference_desired_velocity_{5.0}; // 基于用户设置的巡航速度,考虑道路限速,道路曲率等约束后的目标巡航速度
+  int autonomous_level_{2}; //自动驾驶等级L2、L3、L4
 
   decimal_t sim_resolution_{0.4};
   decimal_t sim_horizon_{4.0};
-  int aggressive_level_{3};
+  int aggressive_level_{3}; //表征侵略性
   planning::OnLaneForwardSimulation::Param sim_param_;
 
   bool use_sim_state_ = true;

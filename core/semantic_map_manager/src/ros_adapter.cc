@@ -53,8 +53,8 @@ void RosAdapter::ArenaInfoDynamicCallback(
   }
 }
 
-void RosAdapter::BindMapUpdateCallback(
-    std::function<int(const SemanticMapManager&)> fn) {
+void RosAdapter::BindMapUpdateCallback(std::function<int(const SemanticMapManager&)> fn) 
+{
   private_callback_fn_ = std::bind(fn, std::placeholders::_1);
   has_callback_binded_ = true;
 }

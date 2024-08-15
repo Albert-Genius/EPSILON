@@ -32,7 +32,8 @@ void SscPlannerServer::PushSemanticMap(const SemanticMapManager& smm) {
   if (p_input_smm_buff_) p_input_smm_buff_->try_enqueue(smm);
 }
 
-void SscPlannerServer::PublishData() {
+void SscPlannerServer::PublishData() 
+{
   using common::VisualizationUtil;
   auto current_time = ros::Time::now().toSec();
   // smm visualization
@@ -167,7 +168,7 @@ void SscPlannerServer::MainThread() {
   using namespace std::chrono;
   system_clock::time_point current_start_time{system_clock::now()};
   system_clock::time_point next_start_time{current_start_time};
-  const milliseconds interval{static_cast<int>(1000.0 / work_rate_)};
+  const milliseconds interval{static_cast<int>(1000.0 / work_rate_)}; // cycle is 50ms
   while (true) {
     current_start_time = system_clock::now();
     next_start_time = current_start_time + interval;
@@ -189,16 +190,14 @@ void SscPlannerServer::PlanCycleCallback() {
   if (!is_map_updated_) return;
 
   // Update map
-  auto map_ptr =
-      std::make_shared<semantic_map_manager::SemanticMapManager>(last_smm_);
+  auto map_ptr = std::make_shared<semantic_map_manager::SemanticMapManager>(last_smm_);
   map_adapter_.set_map(map_ptr);
 
-  PublishData();
+  PublishData(); //?
 
   auto current_time = ros::Time::now().toSec();
   printf("[SscPlannerServer]>>>>>>>current time %lf.\n", current_time);
-  if (executing_traj_ == nullptr || !executing_traj_->IsValid() ||
-      !use_sim_state_) {
+  if (executing_traj_ == nullptr || !executing_traj_->IsValid() || !use_sim_state_) {
     // Init planning
     if (planner_.RunOnce() != kSuccess) {
       // printf("[SscPlannerServer]Initial planning failed.\n");

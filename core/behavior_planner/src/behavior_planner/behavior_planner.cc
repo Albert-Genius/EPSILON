@@ -245,12 +245,12 @@ ErrorType BehaviorPlanner::MultiBehaviorJudge(
     auto it = std::find(forward_behaviors_.begin(), forward_behaviors_.end(),
                         hmi_behavior_);
     if (it != forward_behaviors_.end()) {
-      *mpdm_behavior = hmi_behavior_;
+      *mpdm_behavior = hmi_behavior_; // 用户设置的横向Behavior
     } else {
-      *mpdm_behavior = winner_behavior;
+      *mpdm_behavior = winner_behavior;// 计算出来的横向Behavior
     }
   } else {
-    *mpdm_behavior = winner_behavior;
+    *mpdm_behavior = winner_behavior; // 计算出来的横向Behavior
   }
   *mpdm_desired_velocity = winner_desired_vel;
   return kSuccess;

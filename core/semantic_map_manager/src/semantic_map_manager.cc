@@ -1198,7 +1198,10 @@ ErrorType SemanticMapManager::GetRefLaneForStateByBehavior(
     const common::State &state, const std::vector<int> &navi_path,
     const LateralBehavior &behavior, const decimal_t &max_forward_len,
     const decimal_t &max_back_len, const bool is_high_quality,
-    common::Lane *lane) const {
+    common::Lane *lane) const 
+{
+
+  // 根据当前位姿获取所在车道线ID
   Vec3f state_3dof(state.vec_position(0), state.vec_position(1), state.angle);
   int current_lane_id;
   decimal_t distance_to_lane;
@@ -1210,9 +1213,11 @@ ErrorType SemanticMapManager::GetRefLaneForStateByBehavior(
   }
 
   if (distance_to_lane > max_distance_to_lane_) {
+    // TODO:(@yuandongzhao) 应该添加错误处理
     return kWrongStatus;
   }
 
+  // 根据当前所在车道和横向行为决策获得目标车道ID
   int target_lane_id;
   if (GetTargetLaneId(current_lane_id, behavior, &target_lane_id) != kSuccess) {
     // printf(
@@ -1222,6 +1227,9 @@ ErrorType SemanticMapManager::GetRefLaneForStateByBehavior(
     return kWrongStatus;
   }
 
+  // 后续功能是根据target_lane_id得到该id对应的Lane的有效数据(根据key获得value)
+
+  // 如何存在lut并使能了lut功能的话,直接使用lut
   if (agent_config_info_.enable_fast_lane_lut && has_fast_lut_) {
     if (segment_to_local_lut_.end() !=
         segment_to_local_lut_.find(target_lane_id)) {

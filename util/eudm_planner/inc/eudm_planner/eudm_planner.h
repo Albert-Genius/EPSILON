@@ -348,12 +348,12 @@ class EudmPlanner : public Planner {
   decimal_t desired_velocity_{5.0};
   decimal_t sim_time_total_ = 0.0;
   std::set<int> pre_deleted_seq_ids_;
-  int ego_lane_id_{kInvalidLaneId};
+  int ego_lane_id_{kInvalidLaneId}; // 记录车辆当前所在车道
   std::vector<int> potential_lcl_lane_ids_;
   std::vector<int> potential_lcr_lane_ids_;
   std::vector<int> potential_lk_lane_ids_;
-  common::Lane rss_lane_;
-  common::StateTransformer rss_stf_;
+  common::Lane rss_lane_; // rss施加的车道
+  common::StateTransformer rss_lane_stf_;
   common::RssChecker::RssConfig rss_config_;
   common::RssChecker::RssConfig rss_config_strict_as_front_;
   common::RssChecker::RssConfig rss_config_strict_as_rear_;

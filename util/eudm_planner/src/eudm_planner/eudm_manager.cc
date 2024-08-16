@@ -75,7 +75,8 @@ bool EudmManager::IsTriggerAppropriate(const LateralBehavior& lat) {
 ErrorType EudmManager::Prepare(
     const decimal_t stamp,
     const std::shared_ptr<semantic_map_manager::SemanticMapManager>& map_ptr,
-    const planning::eudm::Task& task) {
+    const planning::eudm::Task& task) 
+{
   map_adapter_.set_map(map_ptr);
 
   DcpAction desired_action;
@@ -812,11 +813,12 @@ ErrorType EudmManager::Run(
   LOG(WARNING) << std::fixed << std::setprecision(4)
                << "[Eudm]RunOnce time cost " << t_runonce << " ms";
 
+  // * III: Summarize
   static TicToc sum_reselect_timer;
   sum_reselect_timer.tic();
-  // * III: Summarize
   Snapshot snapshot;
   SaveSnapshot(&snapshot);
+
   // * IV: Reselect
   if (ReselectByContext(stamp, snapshot, &snapshot.processed_winner_id) !=
       kSuccess) {
@@ -860,6 +862,7 @@ ErrorType EudmManager::Run(
 
   last_snapshot_ = snapshot;
   GenerateLaneChangeProposal(stamp, task);
+
   // * V: Update
   context_.is_valid = true;
   context_.seq_start_time = stamp;

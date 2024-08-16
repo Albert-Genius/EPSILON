@@ -849,7 +849,8 @@ bool EudmPlanner::CheckIfLateralActionFinished(
   }
 }
 
-ErrorType EudmPlanner::RunOnce() {
+ErrorType EudmPlanner::RunOnce() 
+{
   TicToc timer_runonce;
   // * Get current nearest lane id
   if (!map_itf_) {
@@ -857,6 +858,7 @@ ErrorType EudmPlanner::RunOnce() {
     return kWrongStatus;
   }
 
+  // 从 localview中拿到最新的自车信息
   if (map_itf_->GetEgoVehicle(&ego_vehicle_) != kSuccess) {
     LOG(ERROR) << "[Eudm]no ego vehicle found.";
     return kWrongStatus;
@@ -868,6 +870,7 @@ ErrorType EudmPlanner::RunOnce() {
                << "[Eudm]------ Eudm Cycle Begins (stamp): " << time_stamp_
                << " ------- ";
 
+  // 调用地图相关查询接口,根据当前位姿,(和导航路径:当前实现未依赖这个入参)找到当前车辆所在车道线ID
   int ego_lane_id_by_pos = kInvalidLaneId;
   if (map_itf_->GetEgoLaneIdByPosition(std::vector<int>(),
                                        &ego_lane_id_by_pos) != kSuccess) {
@@ -893,10 +896,12 @@ ErrorType EudmPlanner::RunOnce() {
                << lc_info_.left_solid_lane << "," << lc_info_.right_solid_lane;
   ego_lane_id_ = ego_lane_id_by_pos;
 
-  const decimal_t forward_rss_check_range = 130.0;
-  const decimal_t backward_rss_check_range = 130.0;
+  //TODO:(@yuandongzhao) 将CFB相关的参数抽象出来放到配置文件中
+  const decimal_t forward_rss_check_range = 130.0; // 用于CFB第一步中的关键车辆选择
+  const decimal_t backward_rss_check_range = 130.0; // 用于CFB第一步中的关键车辆选择
   const decimal_t forward_lane_len = forward_rss_check_range;
   const decimal_t backward_lane_len = backward_rss_check_range;
+  // 根据当前位姿获得关注的车道线信息(基于该车道线信息做RSS) 
   if (map_itf_->GetRefLaneForStateByBehavior(
           ego_vehicle_.state(), std::vector<int>(),
           LateralBehavior::kLaneKeeping, forward_lane_len, backward_lane_len,
@@ -905,7 +910,7 @@ ErrorType EudmPlanner::RunOnce() {
   }
 
   if (rss_lane_.IsValid()) {
-    rss_stf_ = common::StateTransformer(rss_lane_);
+    rss_lane_stf_ = common::StateTransformer(rss_lane_);
   }
 
   pre_deleted_seq_ids_.clear();
@@ -1001,7 +1006,7 @@ ErrorType EudmPlanner::EvaluateSafetyStatus(
     bool is_rss_safe = true;
     common::RssChecker::LongitudinalViolateType type;
     decimal_t rss_vel_low, rss_vel_up;
-    common::RssChecker::RssCheck(traj_a[i], traj_b[i], rss_stf_, rss_config_,
+    common::RssChecker::RssCheck(traj_a[i], traj_b[i], rss_lane_stf_, rss_config_,
                                  &is_rss_safe, &type, &rss_vel_low,
                                  &rss_vel_up);
     if (!is_rss_safe) {

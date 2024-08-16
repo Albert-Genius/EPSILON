@@ -72,7 +72,7 @@ void BehaviorPlannerServer::JoyCallback(const sensor_msgs::Joy::ConstPtr& msg)
 }
 
 void BehaviorPlannerServer::Start() {
-  bp_.set_map_interface(&map_adapter_);
+  bp_.set_map_interface(&map_adapter_); // 函数接口注入依赖
   std::thread(&BehaviorPlannerServer::MainThread, this).detach();
 }
 

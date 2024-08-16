@@ -106,9 +106,11 @@ void EudmPlannerServer::MainThread() {
   }
 }
 
-void EudmPlannerServer::PlanCycleCallback() {
+void EudmPlannerServer::PlanCycleCallback() 
+{
   if (p_input_smm_buff_ == nullptr) return;
 
+  // 从无锁队列中取最新的数据,丢弃老数据
   bool has_updated_map = false;
   while (p_input_smm_buff_->try_dequeue(smm_)) {
     has_updated_map = true;
@@ -116,13 +118,14 @@ void EudmPlannerServer::PlanCycleCallback() {
 
   if (!has_updated_map) return;
 
+  // 运行时注入地图依赖
   auto map_ptr =
       std::make_shared<semantic_map_manager::SemanticMapManager>(smm_);
 
   decimal_t replan_duration = 1.0 / work_rate_;
   double stamp =
       std::floor(smm_.time_stamp() / replan_duration) * replan_duration;
-
+  // 核心调用:行为决策
   if (bp_manager_.Run(stamp, map_ptr, task_) == kSuccess) {
     common::SemanticBehavior behavior;
     bp_manager_.ConstructBehavior(&behavior);

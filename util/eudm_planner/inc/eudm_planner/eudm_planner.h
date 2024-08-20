@@ -49,11 +49,11 @@ class EudmPlanner : public Planner {
     // * update on scenario-level
     OnLaneForwardSimulation::Param sim_param;
 
-    LatSimMode seq_lat_mode;
-    common::LateralBehavior lat_behavior_longterm{LateralBehavior::kUndefined};
-    common::LateralBehavior seq_lat_behavior;
-    bool is_cancel_behavior;
-    decimal_t operation_at_seconds{0.0};
+    LatSimMode seq_lat_mode; // 为横向行为进行分类
+    common::LateralBehavior lat_behavior_longterm{LateralBehavior::kUndefined}; // 记录长远的横向行为(例如,当前是变道,但下一帧是车道保持,那么长远行为就是车道保持)
+    common::LateralBehavior seq_lat_behavior; // 当下具体的横向行为
+    bool is_cancel_behavior; // 是否变道取消
+    decimal_t operation_at_seconds{0.0}; // 横向行为改变的时间点
 
     // * update on layer-level
     common::LongitudinalBehavior lon_behavior{LongitudinalBehavior::kMaintain};
@@ -347,7 +347,7 @@ class EudmPlanner : public Planner {
   LaneChangeInfo lc_info_;
   decimal_t desired_velocity_{5.0};
   decimal_t sim_time_total_ = 0.0;
-  std::set<int> pre_deleted_seq_ids_;
+  std::set<int> pre_deleted_seq_ids_; // 记录dcp-tree中预删除序列
   int ego_lane_id_{kInvalidLaneId}; // 记录车辆当前所在车道
   std::vector<int> potential_lcl_lane_ids_;
   std::vector<int> potential_lcr_lane_ids_;
@@ -365,20 +365,21 @@ class EudmPlanner : public Planner {
   int ego_id_;
   common::Vehicle ego_vehicle_;
 
-  // * result
-  int winner_id_ = 0;
-  decimal_t winner_score_ = 0.0;
-  std::vector<DcpAction> winner_action_seq_;
-  std::vector<int> sim_res_;
-  std::vector<int> risky_res_;
-  std::vector<std::string> sim_info_;
-  std::vector<decimal_t> final_cost_;
-  std::vector<std::vector<CostStructure>> progress_cost_;
-  std::vector<CostStructure> tail_cost_;
-  vec_E<vec_E<common::Vehicle>> forward_trajs_;
-  std::vector<std::vector<LateralBehavior>> forward_lat_behaviors_;
-  std::vector<std::vector<LongitudinalBehavior>> forward_lon_behaviors_;
-  vec_E<std::unordered_map<int, vec_E<common::Vehicle>>> surround_trajs_;
+  // * result 最终结果
+  int winner_id_ = 0; // 最优策略PIstar对应的ID
+  decimal_t winner_score_ = 0.0; // 最优策略得分
+  std::vector<DcpAction> winner_action_seq_; //PI star
+  // 中间结果
+  std::vector<int> sim_res_; // 存储多线程返回结果
+  std::vector<int> risky_res_; // 存储多线程风险等级
+  std::vector<std::string> sim_info_; // 
+  std::vector<decimal_t> final_cost_; // 存储多线程综合cost
+  std::vector<std::vector<CostStructure>> progress_cost_; // 过程中cost
+  std::vector<CostStructure> tail_cost_; // 终止cost
+  vec_E<vec_E<common::Vehicle>> forward_trajs_; // 前向仿真轨迹
+  std::vector<std::vector<LateralBehavior>> forward_lat_behaviors_; // 横向行为
+  std::vector<std::vector<LongitudinalBehavior>> forward_lon_behaviors_; // 纵向行为
+  vec_E<std::unordered_map<int, vec_E<common::Vehicle>>> surround_trajs_; // 周围车辆的前向仿真轨迹
   decimal_t time_cost_ = 0.0;
 };
 

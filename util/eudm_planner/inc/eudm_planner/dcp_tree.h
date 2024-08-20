@@ -133,8 +133,8 @@ class DcpTree {
   int tree_height_ = 5;
   decimal_t layer_time_ = 1.0;
   decimal_t last_layer_time_ = 1.0;
-  DcpAction ongoing_action_;
-  std::vector<std::vector<DcpAction>> action_script_;
+  DcpAction ongoing_action_; // 记录当前正在进行的Action
+  std::vector<std::vector<DcpAction>> action_script_; // 存储的是展开后(遍历后)的每条从树根到叶子节点的路径
 };
 }  // namespace planning
 

@@ -139,13 +139,16 @@ ErrorType EudmPlanner::TranslateDcpActionToLonLatBehavior(
   return kSuccess;
 }
 
+// 对动作序列做一步解析
+// 主要是找到在什么时间点做了哪种横向动作(同时可能出于鲁棒性设计,考虑了变道取消的情况)
 ErrorType EudmPlanner::ClassifyActionSeq(
     const std::vector<DcpAction>& action_seq, decimal_t* operation_at_seconds,
-    common::LateralBehavior* lat_behavior, bool* is_cancel_operation) const {
-  decimal_t duration = 0.0;
-  decimal_t operation_at = 0.0;
+    common::LateralBehavior* lat_behavior, bool* is_cancel_operation) const 
+{
+  decimal_t duration = 0.0; //记录动作所在时距上的位置
+  //decimal_t operation_at = 0.0;
   bool find_lat_active_behavior = false;
-  *is_cancel_operation = false;
+  *is_cancel_operation = false; // DCP Tree中不会存在变道取消情况,这里为什么还考虑这种情况? 可能是为了鲁棒性设计?
   for (const auto& action : action_seq) {
     if (!find_lat_active_behavior) {
       if (action.lat == DcpLatAction::kLaneChangeLeft) {
@@ -209,9 +212,12 @@ ErrorType EudmPlanner::PrepareMultiThreadContainers(const int n_sequence) {
   return kSuccess;
 }
 
+
+// CFB机制第一步:关键车辆选择
 ErrorType EudmPlanner::GetSurroundingForwardSimAgents(
     const common::SemanticVehicleSet& surrounding_semantic_vehicles,
-    ForwardSimAgentSet* fsagents) const {
+    ForwardSimAgentSet* fsagents) const 
+{
   for (const auto& psv : surrounding_semantic_vehicles.semantic_vehicles) {
     ForwardSimAgent fsagent;
 
@@ -248,19 +254,21 @@ ErrorType EudmPlanner::GetSurroundingForwardSimAgents(
   return kSuccess;
 }
 
-ErrorType EudmPlanner::RunEudm() {
+ErrorType EudmPlanner::RunEudm() 
+{
   // * get relevant information
-  common::SemanticVehicleSet surrounding_semantic_vehicles;
-  if (map_itf_->GetKeySemanticVehicles(&surrounding_semantic_vehicles) !=
-      kSuccess) {
+  common::SemanticVehicleSet surrounding_semantic_vehicles; // 周边动态障碍物(车辆)信息
+  if (map_itf_->GetKeySemanticVehicles(&surrounding_semantic_vehicles) != kSuccess) {
     LOG(ERROR) << "[Eudm][Fatal]fail to get key semantic vehicles. Exit";
     return kWrongStatus;
   }
 
-  ForwardSimAgentSet surrounding_fsagents;
+  // 关键车辆选择
+  ForwardSimAgentSet surrounding_fsagents; // 记录前方关键车辆
   GetSurroundingForwardSimAgents(surrounding_semantic_vehicles,
                                  &surrounding_fsagents);
 
+  // DCP Tree在初始化时已经生成了action script
   auto action_script = dcp_tree_ptr_->action_script();
   int n_sequence = action_script.size();
 
@@ -270,6 +278,7 @@ ErrorType EudmPlanner::RunEudm() {
 
   // * threading
   // TODO(@lu.zhang) Use thread pool?
+  // TODO(@yuandongzhao) 可以使用线程池等并行计算技术进行加速
   TicToc timer;
   for (int i = 0; i < n_sequence; ++i) {
     thread_set[i] =
@@ -287,11 +296,12 @@ ErrorType EudmPlanner::RunEudm() {
   int num_valid_behaviors = 0;
   for (int i = 0; i < static_cast<int>(sim_res_.size()); ++i) {
     if (sim_res_[i] == 1) {
-      sim_success = true;
+      sim_success = true; // 只要有一个功能就算成功
       num_valid_behaviors++;
     }
   }
 
+  // start of just for debug
   for (int i = 0; i < n_sequence; ++i) {
     std::ostringstream line_info;
     line_info << "[Eudm][Result]" << i << " [";
@@ -323,12 +333,15 @@ ErrorType EudmPlanner::RunEudm() {
   }
   LOG(WARNING) << "[Eudm][Result]Sim status: " << sim_success << " with "
                << num_valid_behaviors << " behaviors.";
+  // end of just for debug
+
   if (!sim_success) {
     LOG(ERROR) << "[Eudm][Fatal]Fail to find any valid behavior. Exit";
+    // TODO: (@yuandong.zhao) 应该添加降级策略
     return kWrongStatus;
   }
 
-  // * evaluate
+  // * evaluate 对应论文中的策略选择
   if (EvaluateMultiThreadSimResults(&winner_id_, &winner_score_) != kSuccess) {
     LOG(ERROR)
         << "[Eudm][Fatal]fail to evaluate multi-thread sim results. Exit";
@@ -353,7 +366,8 @@ ErrorType EudmPlanner::UpdateEgoBehaviorsUsingAction(
 
 ErrorType EudmPlanner::UpdateSimSetupForScenario(
     const std::vector<DcpAction>& action_seq,
-    ForwardSimEgoAgent* ego_fsagent) const {
+    ForwardSimEgoAgent* ego_fsagent) const 
+{
   // * Get the type of lateral action sequence
   common::LateralBehavior seq_lat_behavior;
   decimal_t operation_at_seconds;
@@ -539,6 +553,7 @@ ErrorType EudmPlanner::UpdateSimSetupForLayer(
   return kSuccess;
 }
 
+// TODO: (@yuandong.zhao) 接口过于复杂,输出结果应该用结构体封装
 ErrorType EudmPlanner::SimulateScenario(
     const common::Vehicle& ego_vehicle,
     const ForwardSimAgentSet& surrounding_fsagents,
@@ -551,14 +566,16 @@ ErrorType EudmPlanner::SimulateScenario(
     std::vector<std::vector<LateralBehavior>>* sub_forward_lat_behaviors,
     std::vector<std::vector<LongitudinalBehavior>>* sub_forward_lon_behaviors,
     vec_E<std::unordered_map<int, vec_E<common::Vehicle>>>*
-        sub_surround_trajs) {
+        sub_surround_trajs) 
+{
   // * declare variables which will be used to track traces from multiple layers
   vec_E<common::Vehicle> ego_traj_multilayers{ego_vehicle};
 
+  // 做了一个数据抽取
   std::unordered_map<int, vec_E<common::Vehicle>> surround_trajs_multilayers;
   for (const auto& p_fsa : surrounding_fsagents.forward_sim_agents) {
-    surround_trajs_multilayers.insert(std::pair<int, vec_E<common::Vehicle>>(
-        p_fsa.first, vec_E<common::Vehicle>({p_fsa.second.vehicle})));
+    surround_trajs_multilayers.insert(
+        std::pair<int, vec_E<common::Vehicle>>(p_fsa.first, vec_E<common::Vehicle>({p_fsa.second.vehicle})));
   }
 
   std::vector<LateralBehavior> ego_lat_behavior_multilayers;
@@ -566,8 +583,8 @@ ErrorType EudmPlanner::SimulateScenario(
   std::vector<CostStructure> cost_multilayers;
   std::set<int> risky_ids_multilayers;
 
-  // * Setup ego longitudinal sim config
-  ForwardSimEgoAgent ego_fsagent_this_layer;
+  // * Setup ego longitudinal sim config 自车
+  ForwardSimEgoAgent ego_fsagent_this_layer; //fsagent: forward simulation agent
   ego_fsagent_this_layer.vehicle = ego_vehicle;
   UpdateSimSetupForScenario(action_seq, &ego_fsagent_this_layer);
 
@@ -715,10 +732,15 @@ ErrorType EudmPlanner::SimulateScenario(
   return kSuccess;
 }
 
+// 前向仿真
 ErrorType EudmPlanner::SimulateActionSequence(
-    const common::Vehicle& ego_vehicle,
-    const ForwardSimAgentSet& surrounding_fsagents,
-    const std::vector<DcpAction>& action_seq, const int& seq_id) {
+        const common::Vehicle& ego_vehicle,
+        const ForwardSimAgentSet& surrounding_fsagents,
+        const std::vector<DcpAction>& action_seq, const int& seq_id) 
+{
+
+  // TODO: (@yuandong.zhao) 如果在预删除队列中,则直接返回.
+  // 这段逻辑可以放在开辟线程那里,能够节约线程开辟和释放的时间.
   if (pre_deleted_seq_ids_.find(seq_id) != pre_deleted_seq_ids_.end()) {
     sim_res_[seq_id] = 0;
     sim_info_[seq_id] = std::string("(Pre-deleted)");
@@ -728,6 +750,7 @@ ErrorType EudmPlanner::SimulateActionSequence(
   // ~ For each ego sequence, we may further branch here, which will create
   // ~ multiple sub threads. Currently, we use n_sub_threads = 1
   // TODO(@lu.zhang) Preliminary safety assessment here
+  // TODO(@yuandong.zhao)
   int n_sub_threads = 1;
 
   std::vector<int> sub_sim_res(n_sub_threads);
@@ -743,6 +766,7 @@ ErrorType EudmPlanner::SimulateActionSequence(
   vec_E<std::unordered_map<int, vec_E<common::Vehicle>>> sub_surround_trajs(
       n_sub_threads);
 
+  // 根据CFB机制构建虚拟场景,并进行闭环仿真
   SimulateScenario(ego_vehicle, surrounding_fsagents, action_seq, seq_id, 0,
                    &sub_sim_res, &sub_risky_res, &sub_sim_info,
                    &sub_progress_cost, &sub_tail_cost, &sub_forward_trajs,
@@ -755,7 +779,7 @@ ErrorType EudmPlanner::SimulateActionSequence(
     return kWrongStatus;
   }
 
-  // ~ Here use the default scenario
+  // ~ Here use the default scenario //TODO:(yuandong.zhao) 只有一个场景?
   sim_res_[seq_id] = 1;
   risky_res_[seq_id] = sub_risky_res.front();
   sim_info_[seq_id] = sub_sim_info.front();
@@ -909,25 +933,29 @@ ErrorType EudmPlanner::RunOnce()
     LOG(ERROR) << "[Eudm]No Rss lane available. Rss disabled";
   }
 
+  // 将rss_lane_转到frenet坐标系下并保存到rss_lane_stf_中
   if (rss_lane_.IsValid()) {
     rss_lane_stf_ = common::StateTransformer(rss_lane_);
   }
 
+  // 剪枝处理(DCP-Tree在动作空间中提供的引导分支机制,就是剪枝机制)
+  // TODO:(@yuandongzhao) 这块逻辑放在这里感觉不是特别紧凑
   pre_deleted_seq_ids_.clear();
   int n_sequence = dcp_tree_ptr_->action_script().size();
-  for (int i = 0; i < n_sequence; i++) {
+  for (int i = 0; i < n_sequence; i++) { // i做横向遍历
     auto action_seq = dcp_tree_ptr_->action_script()[i];
     int num_actions = action_seq.size();
-    for (int j = 1; j < num_actions; j++) {
-      if ((action_seq[j - 1].lat == DcpLatAction::kLaneChangeLeft &&
-           action_seq[j].lat == DcpLatAction::kLaneChangeRight) ||
-          (action_seq[j - 1].lat == DcpLatAction::kLaneChangeRight &&
-           action_seq[j].lat == DcpLatAction::kLaneChangeLeft)) {
+    for (int j = 1; j < num_actions; j++) { // j做纵向遍历
+      if ((action_seq[j - 1].lat == DcpLatAction::kLaneChangeLeft && action_seq[j].lat == DcpLatAction::kLaneChangeRight) ||
+          (action_seq[j - 1].lat == DcpLatAction::kLaneChangeRight && action_seq[j].lat == DcpLatAction::kLaneChangeLeft)) {
+        /* 该颗树中存在朝令夕改的情况,考虑做剪枝处理 */
         pre_deleted_seq_ids_.insert(i);
       }
+      // TODO:(@yuandongzhao)论文中还提到了对a1-a2-a1和a1-a3-a1的剪枝,但代码里没有体现
     }
   }
 
+  // 调用EUDM决策器进行决策
   TicToc timer;
   if (RunEudm() != kSuccess) {
     LOG(ERROR) << std::fixed << std::setprecision(4)
@@ -935,7 +963,9 @@ ErrorType EudmPlanner::RunOnce()
                << " time cost " << timer.toc() << " ms.";
     return kWrongStatus;
   }
-  auto action_script = dcp_tree_ptr_->action_script();
+
+  // just for debug
+  auto action_script = dcp_tree_ptr_->action_script(); // 为什么不提供一个winner_action_script?
   std::ostringstream line_info;
   line_info << "[Eudm]SUCCESS id:" << winner_id_ << " [";
   for (const auto& a : action_script[winner_id_]) {
@@ -956,7 +986,8 @@ ErrorType EudmPlanner::RunOnce()
 ErrorType EudmPlanner::EvaluateSinglePolicyTrajs(
     const std::vector<CostStructure>& progress_cost,
     const CostStructure& tail_cost, const std::vector<DcpAction>& action_seq,
-    decimal_t* score) {
+    decimal_t* score) 
+{
   decimal_t score_tmp = 0.0;
   for (const auto& c : progress_cost) {
     score_tmp += c.ave();
@@ -965,8 +996,11 @@ ErrorType EudmPlanner::EvaluateSinglePolicyTrajs(
   return kSuccess;
 }
 
+
+// 策略选择
 ErrorType EudmPlanner::EvaluateMultiThreadSimResults(int* winner_id,
-                                                     decimal_t* winner_cost) {
+                                                     decimal_t* winner_cost) 
+{
   decimal_t min_cost = kInf;
   int best_id = 0;
   int num_sequences = sim_res_.size();
@@ -976,8 +1010,7 @@ ErrorType EudmPlanner::EvaluateMultiThreadSimResults(int* winner_id,
     }
     decimal_t cost = 0.0;
     auto action_seq = dcp_tree_ptr_->action_script()[i];
-    EvaluateSinglePolicyTrajs(progress_cost_[i], tail_cost_[i], action_seq,
-                              &cost);
+    EvaluateSinglePolicyTrajs(progress_cost_[i], tail_cost_[i], action_seq, &cost);
     final_cost_[i] = cost;
     if (cost < min_cost) {
       min_cost = cost;

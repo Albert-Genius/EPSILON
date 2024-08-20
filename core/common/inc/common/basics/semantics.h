@@ -247,13 +247,13 @@ struct SemanticVehicle {
   int nearest_lane_id{kInvalidLaneId};
   decimal_t dist_to_lane{-1.0};
   decimal_t arc_len_onlane{-1.0};
+  Lane lane;
 
-  // * prediction
+  // * lat behavior prediction
   ProbDistOfLatBehaviors probs_lat_behaviors;
 
   // * argmax behavior
   LateralBehavior lat_behavior{LateralBehavior::kUndefined};
-  Lane lane;
 };
 
 struct SemanticVehicleSet {

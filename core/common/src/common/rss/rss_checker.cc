@@ -286,12 +286,25 @@ ErrorType RssChecker::RssCheck(const FrenetState& ego_fs,
   }
   return kSuccess;
 }
-
+/**
+ * RssChecker 
+ * 
+ * @param  {Vehicle} ego_vehicle               : input@ 自身车辆
+ * @param  {Vehicle} other_vehicle             : input@ 他方车辆
+ * @param  {StateTransformer} stf              : input@ 自车目标车道线 
+ * @param  {RssConfig} config                  : input@ Rss配置
+ * @param  {bool*} is_safe                     : output@ 是否安全
+ * @param  {LongitudinalViolateType*} lon_type : output@ 纵向冲突类型
+ * @param  {decimal_t*} rss_vel_low            : output@ 速度安全下边界
+ * @param  {decimal_t*} rss_vel_up             : output@ 速度安全上边界
+ * @return {ErrorType}                         : 
+ */
 ErrorType RssChecker::RssCheck(const Vehicle& ego_vehicle,
                                const Vehicle& other_vehicle,
                                const StateTransformer& stf, const RssConfig& config,
                                bool* is_safe, LongitudinalViolateType* lon_type,
-                               decimal_t* rss_vel_low, decimal_t* rss_vel_up) {
+                               decimal_t* rss_vel_low, decimal_t* rss_vel_up) 
+{
   FrenetState ego_fs, other_fs;
   // TODO(lu.zhang): construct stf is a little bit heavy
   // StateTransformer stf(ref_lane);

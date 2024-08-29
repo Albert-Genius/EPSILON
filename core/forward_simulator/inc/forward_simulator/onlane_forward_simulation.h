@@ -155,11 +155,22 @@ class OnLaneForwardSimulation {
 
     return kSuccess;
   }
-
+  /**
+   * 
+   * @param  {common::StateTransformer} stf : input@ 目标车道线(福莱纳坐标系)
+   * @param  {common::Vehicle} ego_vehicle  : input@ 自车状态
+   * @param  {Vehicle} leading_vehicle      : input@ 前车状态
+   * @param  {decimal_t} lat_track_offset   : input@ 横向偏移
+   * @param  {decimal_t} dt                 : input@ 时间间隔
+   * @param  {Param} param                  : input@ 仿真参数
+   * @param  {State*} desired_state         : output@ 仿真结果
+   * @return {ErrorType}                    : 
+   */
   static ErrorType PropagateOnceAdvancedLK(
       const common::StateTransformer& stf, const common::Vehicle& ego_vehicle,
       const Vehicle& leading_vehicle, const decimal_t& lat_track_offset,
-      const decimal_t& dt, const Param& param, State* desired_state) {
+      const decimal_t& dt, const Param& param, State* desired_state) 
+  {
     common::State current_state = ego_vehicle.state();
     decimal_t wheelbase_len = ego_vehicle.param().wheel_base();
     auto sim_param = param;
@@ -221,13 +232,28 @@ class OnLaneForwardSimulation {
     return kSuccess;
   }
 
+  /**
+   * 
+   * @param  {common::StateTransformer} stf_current : input@ 当前车道
+   * @param  {common::StateTransformer} stf_target  : input@ 目标车道
+   * @param  {common::Vehicle} ego_vehicle          : input@ 自车
+   * @param  {Vehicle} current_leading_vehicle      : input@ 当前车道前车
+   * @param  {Vehicle} gap_front_vehicle            : input@ 目标车道前车 
+   * @param  {Vehicle} gap_rear_vehicle             : input@ 目标车道后车
+   * @param  {decimal_t} lat_track_offset           : input@ 车道偏移
+   * @param  {decimal_t} dt                         : input@ 积分时间 
+   * @param  {Param} param                          : input@ eudm 模拟参数 
+   * @param  {State*} desired_state                 : output@ 期望状态
+   * @return {ErrorType}                            : 
+   */
   static ErrorType PropagateOnceAdvancedLC(
       const common::StateTransformer& stf_current,
       const common::StateTransformer& stf_target,
       const common::Vehicle& ego_vehicle,
       const Vehicle& current_leading_vehicle, const Vehicle& gap_front_vehicle,
       const Vehicle& gap_rear_vehicle, const decimal_t& lat_track_offset,
-      const decimal_t& dt, const Param& param, State* desired_state) {
+      const decimal_t& dt, const Param& param, State* desired_state) 
+  {
     common::State current_state = ego_vehicle.state();
     decimal_t wheelbase_len = ego_vehicle.param().wheel_base();
     auto sim_param = param;
@@ -314,12 +340,22 @@ class OnLaneForwardSimulation {
                           sim_param, desired_state);
     return kSuccess;
   }
-
+  /**
+   * 
+   * @param  {common::StateTransformer} stf : input@ lane infomation
+   * @param  {common::Vehicle} ego_vehicle  : input@ ego vehicle
+   * @param  {Vehicle} leading_vehicle      : input@ leading vehicle
+   * @param  {decimal_t} dt                 : input@ time step
+   * @param  {Param} param                  : input@ simulation parameter(IDM)
+   * @param  {State*} desired_state         : output@ desired state
+   * @return {ErrorType}                    : 
+   */
   static ErrorType PropagateOnce(const common::StateTransformer& stf,
                                  const common::Vehicle& ego_vehicle,
                                  const Vehicle& leading_vehicle,
                                  const decimal_t& dt, const Param& param,
-                                 State* desired_state) {
+                                 State* desired_state) 
+  {
     common::State current_state = ego_vehicle.state();
     decimal_t wheelbase_len = ego_vehicle.param().wheel_base();
     auto sim_param = param;

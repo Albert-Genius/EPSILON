@@ -49,18 +49,20 @@ class EudmPlanner : public Planner {
     // * update on scenario-level
     OnLaneForwardSimulation::Param sim_param;
 
-    LatSimMode seq_lat_mode; // 为横向行为进行分类
+    LatSimMode seq_lat_mode; // 为横向行为进行分类(加上时间维度)
     common::LateralBehavior lat_behavior_longterm{LateralBehavior::kUndefined}; // 记录长远的横向行为(例如,当前是变道,但下一帧是车道保持,那么长远行为就是车道保持)
     common::LateralBehavior seq_lat_behavior; // 当下具体的横向行为
     bool is_cancel_behavior; // 是否变道取消
     decimal_t operation_at_seconds{0.0}; // 横向行为改变的时间点
 
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
     // * update on layer-level
     common::LongitudinalBehavior lon_behavior{LongitudinalBehavior::kMaintain};
     common::LateralBehavior lat_behavior{LateralBehavior::kUndefined};
 
-    common::Lane current_lane;
-    common::StateTransformer current_stf;
+    common::Lane current_lane; // 存储笛卡尔坐标系下的车道信息
+    common::StateTransformer current_stf; // 存储福莱纳坐标系下的车道信息
     common::Lane target_lane;
     common::StateTransformer target_stf;
     common::Lane longterm_lane;
@@ -69,6 +71,8 @@ class EudmPlanner : public Planner {
     Vec2i target_gap_ids;  // optional, gap ids are fixed in each layer, but gap
                            // is changing in each step
 
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // * update on step-level
     common::Vehicle vehicle;
   };
@@ -78,14 +82,14 @@ class EudmPlanner : public Planner {
     common::Vehicle vehicle;
 
     // * lon
-    OnLaneForwardSimulation::Param sim_param;
+    OnLaneForwardSimulation::Param sim_param; // IDM参数
 
     // * lat
-    common::ProbDistOfLatBehaviors lat_probs;
-    common::LateralBehavior lat_behavior{LateralBehavior::kUndefined};
+    common::ProbDistOfLatBehaviors lat_probs; // 横向行为预测概率分布
+    common::LateralBehavior lat_behavior{LateralBehavior::kUndefined}; // 最大概率横向行为
 
-    common::Lane lane;
-    common::StateTransformer stf;
+    common::Lane lane; // 存储笛卡尔坐标系下的所在车道信息
+    common::StateTransformer stf; // 存储福莱纳坐标系下的车道信息
 
     // * other
     decimal_t lat_range;

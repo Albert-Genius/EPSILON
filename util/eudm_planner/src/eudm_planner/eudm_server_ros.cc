@@ -42,9 +42,9 @@ void EudmPlannerServer::PublishData() {
 void EudmPlannerServer::Init(const std::string &bp_config_path) {
   bp_manager_.Init(bp_config_path, work_rate_);
   joy_sub_ = nh_.subscribe("/joy", 10, &EudmPlannerServer::JoyCallback, this);
-  nh_.param("use_sim_state", use_sim_state_, true);
+  //nh_.param("use_sim_state", use_sim_state_, true);//这个变量实际没有使用
   p_visualizer_->Init();
-  p_visualizer_->set_use_sim_state(use_sim_state_);
+  //p_visualizer_->set_use_sim_state(use_sim_state_); //这个变量实际没有使用
 }
 
 void EudmPlannerServer::JoyCallback(const sensor_msgs::Joy::ConstPtr &msg) {

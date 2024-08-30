@@ -73,13 +73,13 @@ class EudmPlannerServer {
 
   Config config_;
 
-  EudmManager bp_manager_;
-  EudmPlannerVisualizer *p_visualizer_;
+  EudmManager bp_manager_; // 行为决策助理
+  EudmPlannerVisualizer *p_visualizer_; // 可视化助理
 
   SemanticMapManager smm_;
 
   planning::eudm::Task task_;
-  bool use_sim_state_ = true;
+  //bool use_sim_state_ = true; // 实际未使用
   // ros related
   ros::NodeHandle nh_;
   ros::Subscriber joy_sub_;

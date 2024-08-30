@@ -87,12 +87,12 @@ class EudmPlannerVisualizer {
     forward_traj_vis_pub_.publish(traj_list_marker);
   }
 
-  void set_use_sim_state(bool use_sim_state) { use_sim_state_ = use_sim_state; }
+  //void set_use_sim_state(bool use_sim_state) { use_sim_state_ = use_sim_state; }
 
  private:
   ros::NodeHandle nh_;
   int ego_id_;
-  bool use_sim_state_ = true;
+  //bool use_sim_state_ = true;
 
   int last_forward_trajs_marker_cnt_ = 0;
 

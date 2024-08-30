@@ -6,7 +6,7 @@ std::string BehaviorPlanner::Name() {
   return std::string("Generic behavior planner");
 }
 
-ErrorType BehaviorPlanner::Init(const std::string config) {
+ErrorType BehaviorPlanner::Init(const std::string config/*这个参数没有使用 */) {
   p_route_planner_ = new planning::RoutePlanner();
   behavior_.actual_desired_velocity = 0.0;
   return kSuccess;

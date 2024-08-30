@@ -170,8 +170,10 @@ class EudmPlanner : public Planner {
 
   decimal_t desired_velocity() const;
 
+  /* 获取所有前向仿真轨迹 */
   vec_E<vec_E<common::Vehicle>> forward_trajs() const { return forward_trajs_; }
 
+  /* 获取 最优轨迹ID */
   int winner_id() const;
 
   decimal_t time_cost() const;
@@ -380,7 +382,7 @@ class EudmPlanner : public Planner {
   std::vector<decimal_t> final_cost_; // 存储多线程综合cost
   std::vector<std::vector<CostStructure>> progress_cost_; // 过程中cost
   std::vector<CostStructure> tail_cost_; // 终止cost
-  vec_E<vec_E<common::Vehicle>> forward_trajs_; // 前向仿真轨迹
+  vec_E<vec_E<common::Vehicle>> forward_trajs_; // 所有前向仿真轨迹
   std::vector<std::vector<LateralBehavior>> forward_lat_behaviors_; // 横向行为
   std::vector<std::vector<LongitudinalBehavior>> forward_lon_behaviors_; // 纵向行为
   vec_E<std::unordered_map<int, vec_E<common::Vehicle>>> surround_trajs_; // 周围车辆的前向仿真轨迹

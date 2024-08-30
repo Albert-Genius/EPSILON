@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
   double desired_vel;
   nh.param("desired_vel", desired_vel, 6.0);
   // Declare bp
-  p_bp_server_ = new planning::EudmPlannerServer(nh, bp_work_rate, ego_id);// nh,主要用来读取launch文件中的参数;订阅摇杆消息
+  p_bp_server_ = new planning::EudmPlannerServer(nh, bp_work_rate, ego_id);// nh,主要用来读取launch文件中的参数;订阅摇杆消息;发布调试信息
   p_bp_server_->set_user_desired_velocity(desired_vel);
   p_bp_server_->BindBehaviorUpdateCallback(BehaviorUpdateCallback); // 三大模块间的消息流传递使用的是回调函数和无环缓冲队列实现
 

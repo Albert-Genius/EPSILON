@@ -71,15 +71,15 @@ class BehaviorPlannerServer {
 
   void Replan();
 
-  void PublishData();
+  void PublishVisualData();
 
   void MainThread();
 
   Config config_;
 
-  BehaviorPlanner bp_;
+  BehaviorPlanner bp_; /* 行为决策助理 */
   BehaviorPlannerMapAdapter map_adapter_;
-  BehaviorPlannerVisualizer *p_visualizer_;
+  BehaviorPlannerVisualizer *p_visualizer_; /* 可视化助理 */
 
   TicToc time_profile_tool_;
   decimal_t global_init_stamp_{0.0};
@@ -91,7 +91,7 @@ class BehaviorPlannerServer {
   double work_rate_;
   int ego_id_;
 
-  // input buffer
+  // input buffer 存储原始语义地图数据,所有决策都依据它制定
   moodycamel::ReaderWriterQueue<SemanticMapManager> *p_input_smm_buff_;
 
   bool has_callback_binded_ = false;

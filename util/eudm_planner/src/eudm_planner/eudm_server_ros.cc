@@ -23,7 +23,8 @@ EudmPlannerServer::EudmPlannerServer(ros::NodeHandle nh, int ego_id)
 
 EudmPlannerServer::EudmPlannerServer(ros::NodeHandle nh, double work_rate,
                                      int ego_id)
-    : nh_(nh), work_rate_(work_rate), ego_id_(ego_id) {
+    : nh_(nh), work_rate_(work_rate), ego_id_(ego_id) 
+{
   p_visualizer_ = new EudmPlannerVisualizer(nh, &bp_manager_, ego_id);
   p_input_smm_buff_ = new moodycamel::ReaderWriterQueue<SemanticMapManager>(
       config_.kInputBufferSize);

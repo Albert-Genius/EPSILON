@@ -18,13 +18,13 @@ BehaviorPlannerServer::BehaviorPlannerServer(ros::NodeHandle nh,
       config_.kInputBufferSize);
 }
 
-// TODO: 需要做异常处理
+// TODO:(@yuandong.zhao) 需要做异常处理
 void BehaviorPlannerServer::PushSemanticMap(const SemanticMapManager& smm) {
   if (p_input_smm_buff_) 
-    p_input_smm_buff_->try_enqueue(smm);
+    p_input_smm_buff_->try_enqueue(smm); // 返回结果也没有处理，需要处理
 }
 
-void BehaviorPlannerServer::PublishData() {
+void BehaviorPlannerServer::PublishVisualData() {
   p_visualizer_->PublishDataWithStamp(ros::Time::now());
 }
 
@@ -116,7 +116,7 @@ void BehaviorPlannerServer::PlanCycleCallback()
     if (has_callback_binded_) {
       private_callback_fn_(smm);
     }
-    PublishData(); // 可视化
+    PublishVisualData(); // 发布可视化数据
   }
 }
 

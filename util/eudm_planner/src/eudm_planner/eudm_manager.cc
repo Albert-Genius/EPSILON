@@ -184,7 +184,7 @@ ErrorType EudmManager::GenerateLaneChangeProposal(
   }
 
   // if stick not reset, will not try active lane change
-  if (lc_context_.completed && task.user_perferred_behavior != 0) {
+  if (lc_context_.completed && task.user_preferred_behavior != 0) {
     preliminary_active_requests_.clear();
     LOG(WARNING) << std::fixed << std::setprecision(5)
                  << "[Eudm][ActiveLc]Clear request due to stick not rest:"
@@ -363,10 +363,10 @@ void EudmManager::UpdateLaneChangeContextByTask(
     last_lc_proposal_.trigger_time = stamp;
   }
 
-  if (task.user_perferred_behavior != last_task_.user_perferred_behavior) {
+  if (task.user_preferred_behavior != last_task_.user_preferred_behavior) {
     LOG(WARNING) << "[HMI]stick state change from "
-                 << last_task_.user_perferred_behavior << " to "
-                 << task.user_perferred_behavior;
+                 << last_task_.user_preferred_behavior << " to "
+                 << task.user_preferred_behavior;
   }
 
   if ((task.lc_info.forbid_lane_change_left !=
@@ -390,21 +390,21 @@ void EudmManager::UpdateLaneChangeContextByTask(
         lc_context_.trigger_when_appropriate = false;
         last_lc_proposal_.trigger_time = stamp;
       } else {
-        if (task.user_perferred_behavior != 1 &&
-            last_task_.user_perferred_behavior == 1) {
+        if (task.user_preferred_behavior != 1 &&
+            last_task_.user_preferred_behavior == 1) {
           // receive a lane cancel trigger
           LOG(WARNING) << "[HMI]lane change cancel by stick "
-                       << last_task_.user_perferred_behavior << " to "
-                       << task.user_perferred_behavior << ". Cd alc.";
+                       << last_task_.user_preferred_behavior << " to "
+                       << task.user_preferred_behavior << ". Cd alc.";
           lc_context_.completed = true;
           lc_context_.trigger_when_appropriate = false;
           last_lc_proposal_.trigger_time = stamp;
-        } else if (task.user_perferred_behavior != -1 &&
-                   last_task_.user_perferred_behavior == -1) {
+        } else if (task.user_preferred_behavior != -1 &&
+                   last_task_.user_preferred_behavior == -1) {
           // receive a lane cancel trigger
           LOG(WARNING) << "[HMI]lane change cancel by stick "
-                       << last_task_.user_perferred_behavior << " to "
-                       << task.user_perferred_behavior << ". Cd alc.";
+                       << last_task_.user_preferred_behavior << " to "
+                       << task.user_preferred_behavior << ". Cd alc.";
           lc_context_.completed = true;
           lc_context_.trigger_when_appropriate = false;
           last_lc_proposal_.trigger_time = stamp;
@@ -460,8 +460,8 @@ void EudmManager::UpdateLaneChangeContextByTask(
                          .active_lc()
                          .enable_auto_canbel_by_stick_signal() &&
                      lc_context_.lat == LateralBehavior::kLaneChangeLeft &&
-                     (task.user_perferred_behavior == 1 ||
-                      task.user_perferred_behavior == 11)) {
+                     (task.user_preferred_behavior == 1 ||
+                      task.user_preferred_behavior == 11)) {
             LOG(WARNING)
                 << "[HMI]ACTIVE [left] canceled due to human opposite signal. "
                    "Cd alc.";
@@ -473,8 +473,8 @@ void EudmManager::UpdateLaneChangeContextByTask(
                          .active_lc()
                          .enable_auto_canbel_by_stick_signal() &&
                      lc_context_.lat == LateralBehavior::kLaneChangeRight &&
-                     (task.user_perferred_behavior == -1 ||
-                      task.user_perferred_behavior == 12)) {
+                     (task.user_preferred_behavior == -1 ||
+                      task.user_preferred_behavior == 12)) {
             LOG(WARNING) << "[HMI]ACTIVE canceled due to human active signal. "
                             "Cd alc.";
             lc_context_.completed = true;
@@ -486,22 +486,22 @@ void EudmManager::UpdateLaneChangeContextByTask(
     } else {
       // lane change completed state: welcome new activations
       // handle user requirement first
-      if (task.user_perferred_behavior != 1 &&
-          last_task_.user_perferred_behavior == 1 &&
+      if (task.user_preferred_behavior != 1 &&
+          last_task_.user_preferred_behavior == 1 &&
           lc_context_.trigger_when_appropriate) {
         LOG(WARNING) << "[HMI]clear cached stick trigger state. Cd alc.";
         lc_context_.trigger_when_appropriate = false;
         last_lc_proposal_.trigger_time = stamp;
-      } else if (task.user_perferred_behavior != -1 &&
-                 last_task_.user_perferred_behavior == -1 &&
+      } else if (task.user_preferred_behavior != -1 &&
+                 last_task_.user_preferred_behavior == -1 &&
                  lc_context_.trigger_when_appropriate) {
         LOG(WARNING) << "[HMI]clear cached stick trigger state. Cd alc.";
         lc_context_.trigger_when_appropriate = false;
         last_lc_proposal_.trigger_time = stamp;
       }
 
-      if (task.user_perferred_behavior == 1 &&
-          last_task_.user_perferred_behavior != 1) {
+      if (task.user_preferred_behavior == 1 &&
+          last_task_.user_preferred_behavior != 1) {
         // receive a lane change right trigger and previous action has been
         // completed
         if (task.lc_info.forbid_lane_change_right) {
@@ -522,8 +522,8 @@ void EudmManager::UpdateLaneChangeContextByTask(
             last_lc_proposal_.trigger_time = stamp;
             LOG(WARNING) << std::fixed << std::setprecision(5)
                          << "[HMI]stick [Right] triggered "
-                         << last_task_.user_perferred_behavior << "->"
-                         << task.user_perferred_behavior << " in "
+                         << last_task_.user_preferred_behavior << "->"
+                         << task.user_preferred_behavior << " in "
                          << bp_.cfg().function().stick_lane_change_in_seconds()
                          << " s. Trigger time " << lc_context_.trigger_time
                          << " and absolute action time: "
@@ -535,13 +535,13 @@ void EudmManager::UpdateLaneChangeContextByTask(
             LOG(WARNING)
                 << std::fixed << std::setprecision(5)
                 << "[HMI]stick [Right] triggered "
-                << last_task_.user_perferred_behavior << "->"
-                << task.user_perferred_behavior
+                << last_task_.user_preferred_behavior << "->"
+                << task.user_preferred_behavior
                 << " but not a good time. Will trigger when appropriate.";
           }
         }
-      } else if (task.user_perferred_behavior == -1 &&
-                 last_task_.user_perferred_behavior != -1) {
+      } else if (task.user_preferred_behavior == -1 &&
+                 last_task_.user_preferred_behavior != -1) {
         if (task.lc_info.forbid_lane_change_left) {
           LOG(WARNING)
               << "[HMI]cannot stick [Left]. Will trigger when appropriate.";
@@ -560,8 +560,8 @@ void EudmManager::UpdateLaneChangeContextByTask(
             last_lc_proposal_.trigger_time = stamp;
             LOG(WARNING) << std::fixed << std::setprecision(5)
                          << "[HMI]stick [Left] triggered "
-                         << last_task_.user_perferred_behavior << "->"
-                         << task.user_perferred_behavior << " in "
+                         << last_task_.user_preferred_behavior << "->"
+                         << task.user_preferred_behavior << " in "
                          << bp_.cfg().function().stick_lane_change_in_seconds()
                          << " s. Trigger time " << lc_context_.trigger_time
                          << " and absolute action time: "
@@ -573,8 +573,8 @@ void EudmManager::UpdateLaneChangeContextByTask(
             LOG(WARNING)
                 << std::fixed << std::setprecision(5)
                 << "[HMI]stick [Left] triggered "
-                << last_task_.user_perferred_behavior << "->"
-                << task.user_perferred_behavior
+                << last_task_.user_preferred_behavior << "->"
+                << task.user_preferred_behavior
                 << " but not a good time. Will trigger when appropriate.";
           }
         }
@@ -785,7 +785,8 @@ ErrorType EudmManager::ReselectByContext(const decimal_t stamp,
 ErrorType EudmManager::Run(
     const decimal_t stamp,
     const std::shared_ptr<semantic_map_manager::SemanticMapManager>& map_ptr, /*interface injection*/
-    const planning::eudm::Task& task) {
+    const planning::eudm::Task& task/*传递用户任务(人机共驾)*/) 
+{
   LOG(WARNING) << std::fixed << std::setprecision(4)
                << "[Eudm]******************** RUN START: " << stamp
                << "******************";

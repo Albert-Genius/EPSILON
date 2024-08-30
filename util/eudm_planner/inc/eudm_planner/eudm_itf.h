@@ -9,8 +9,8 @@ namespace planning {
 namespace eudm {
 
 struct LaneChangeInfo {
-  bool forbid_lane_change_left = false;
-  bool forbid_lane_change_right = false;
+  bool forbid_lane_change_left = false; // 禁止左变道
+  bool forbid_lane_change_right = false; // 禁止右变道
   bool lane_change_left_unsafe_by_occu = false;
   bool lane_change_right_unsafe_by_occu = false;
   bool left_solid_lane = false;
@@ -21,8 +21,8 @@ struct LaneChangeInfo {
 
 struct Task {
   bool is_under_ctrl = false;
-  double user_desired_vel;
-  int user_perferred_behavior = 0;
+  double user_desired_vel; /* 用户设置的期望速度 */
+  int user_preferred_behavior = 0; /* 用户拨杆行为 */
   LaneChangeInfo lc_info;
 };
 

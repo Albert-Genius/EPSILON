@@ -250,22 +250,22 @@ def handle_keyboard_event():
 
         if event.type == KEYDOWN:
             joy = init_joy("{}".format(agent_id))
-            if event.key == pg.K_w:
+            if event.key == pg.K_w or event.key == pg.K_UP:
                 msg = 'Agent {}: Speed up'.format(agent_id)
                 print(msg)
                 joy.buttons[3] = 1
                 joy_pub.publish(joy)
-            elif event.key == pg.K_s:
+            elif event.key == pg.K_s or event.key == pg.K_DOWN:
                 msg = 'Agent {}: Brake'.format(agent_id)
                 print(msg)
                 joy.buttons[0] = 1
                 joy_pub.publish(joy)
-            elif event.key == pg.K_a:
+            elif event.key == pg.K_a or event.key == pg.K_LEFT:
                 msg = 'Agent {}: Lane change left'.format(agent_id)
                 print(msg)
                 joy.buttons[2] = 1
                 joy_pub.publish(joy)
-            elif event.key == pg.K_d:
+            elif event.key == pg.K_d or event.key == pg.K_RIGHT:
                 msg = 'Agent {}: Lane change right'.format(agent_id)
                 print(msg)
                 joy.buttons[1] = 1

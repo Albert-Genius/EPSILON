@@ -78,7 +78,7 @@ class EudmPlannerServer {
 
   SemanticMapManager smm_;
 
-  planning::eudm::Task task_;
+  planning::eudm::Task task_; // 记录用户下发的驾驶任务
   //bool use_sim_state_ = true; // 实际未使用
   // ros related
   ros::NodeHandle nh_;

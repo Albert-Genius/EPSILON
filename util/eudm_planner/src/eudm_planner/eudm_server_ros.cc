@@ -18,7 +18,7 @@ EudmPlannerServer::EudmPlannerServer(ros::NodeHandle nh, int ego_id)
   p_visualizer_ = new EudmPlannerVisualizer(nh, &bp_manager_, ego_id);
   p_input_smm_buff_ = new moodycamel::ReaderWriterQueue<SemanticMapManager>(
       config_.kInputBufferSize);
-  task_.user_perferred_behavior = 0;
+  task_.user_preferred_behavior = 0; // 用户指定的变道行为
 }
 
 EudmPlannerServer::EudmPlannerServer(ros::NodeHandle nh, double work_rate,
@@ -28,18 +28,20 @@ EudmPlannerServer::EudmPlannerServer(ros::NodeHandle nh, double work_rate,
   p_visualizer_ = new EudmPlannerVisualizer(nh, &bp_manager_, ego_id);
   p_input_smm_buff_ = new moodycamel::ReaderWriterQueue<SemanticMapManager>(
       config_.kInputBufferSize);
-  task_.user_perferred_behavior = 0;
+  task_.user_preferred_behavior = 0;
 }
 
 void EudmPlannerServer::PushSemanticMap(const SemanticMapManager &smm) {
   if (p_input_smm_buff_) p_input_smm_buff_->try_enqueue(smm);
 }
 
-void EudmPlannerServer::PublishData() {
+void EudmPlannerServer::PublishData() 
+{
   p_visualizer_->PublishDataWithStamp(ros::Time::now());
 }
 
-void EudmPlannerServer::Init(const std::string &bp_config_path) {
+void EudmPlannerServer::Init(const std::string &bp_config_path) 
+{
   bp_manager_.Init(bp_config_path, work_rate_);
   joy_sub_ = nh_.subscribe("/joy", 10, &EudmPlannerServer::JoyCallback, this);
   //nh_.param("use_sim_state", use_sim_state_, true);//这个变量实际没有使用
@@ -47,45 +49,53 @@ void EudmPlannerServer::Init(const std::string &bp_config_path) {
   //p_visualizer_->set_use_sim_state(use_sim_state_); //这个变量实际没有使用
 }
 
-void EudmPlannerServer::JoyCallback(const sensor_msgs::Joy::ConstPtr &msg) {
-  int msg_id;
+
+/* 拨杆变道 */
+void EudmPlannerServer::JoyCallback(const sensor_msgs::Joy::ConstPtr &msg)
+{
+  int msg_id; // 这里的frame id用于标识车辆 id
   if (std::string("").compare(msg->header.frame_id) == 0) {
     msg_id = 0;
   } else {
     msg_id = std::stoi(msg->header.frame_id);
   }
-  if (msg_id != ego_id_) return;
-  // ~ buttons[2] --> 1 -->  lcl
-  // ~ buttons[1] --> 1 -->  lcr
-  // ~ buttons[3] --> 1 -->  +1m/s
-  // ~ buttons[0] --> 1 -->  -1m/s
+  if (msg_id != ego_id_) 
+    return;
+
+  // ~ buttons[2] --> 1 -->  lcl   @对应键盘上的"A"或者向左的箭头
+  // ~ buttons[1] --> 1 -->  lcr   @对应键盘上的"D"或者向右的箭头
+  // ~ buttons[3] --> 1 -->  +1m/s @对应键盘上的"W"或者向上的箭头
+  // ~ buttons[0] --> 1 -->  -1m/s @对应键盘上的"S"或者向下的箭头
+  // ~ buttons[4] --> 1 -->  forbid left lane change @对应键盘上的"Q"
+  // ~ buttons[5] --> 1 -->  forbid right lane change @对应键盘上的"E"
+  // ~ buttons[6] --> 1 -->  reset @对应键盘上的"R"
   if (msg->buttons[0] == 0 && msg->buttons[1] == 0 && msg->buttons[2] == 0 &&
       msg->buttons[3] == 0 && msg->buttons[4] == 0 && msg->buttons[5] == 0 &&
       msg->buttons[6] == 0)
     return;
 
-  if (msg->buttons[2] == 1) {
-    if (task_.user_perferred_behavior != -1) {
-      task_.user_perferred_behavior = -1;
+  if (msg->buttons[2] == 1) { //左变道
+    if (task_.user_preferred_behavior != -1) {
+      task_.user_preferred_behavior = -1; // -1 代表左变道
     } else {
-      task_.user_perferred_behavior = 0;
+      task_.user_preferred_behavior = 0;
     }
-  } else if (msg->buttons[1] == 1) {
-    if (task_.user_perferred_behavior != 1) {
-      task_.user_perferred_behavior = 1;
+  } else if (msg->buttons[1] == 1) { //右变道
+    if (task_.user_preferred_behavior != 1) {
+      task_.user_preferred_behavior = 1; // 1 代表右变道
     } else {
-      task_.user_perferred_behavior = 0;
+      task_.user_preferred_behavior = 0;
     }
   } else if (msg->buttons[3] == 1) {
-    task_.user_desired_vel = task_.user_desired_vel + 1.0;
+    task_.user_desired_vel = task_.user_desired_vel + 1.0; // 加速 TODO:(@yuandong.zhao) 应该加一个最大限速
   } else if (msg->buttons[0] == 1) {
-    task_.user_desired_vel = std::max(task_.user_desired_vel - 1.0, 0.0);
+    task_.user_desired_vel = std::max(task_.user_desired_vel - 1.0, 0.0); // 减速
   } else if (msg->buttons[4] == 1) {
-    task_.lc_info.forbid_lane_change_left = !task_.lc_info.forbid_lane_change_left;
+    task_.lc_info.forbid_lane_change_left = !task_.lc_info.forbid_lane_change_left; //禁止左变道
   } else if (msg->buttons[5] == 1) {
-    task_.lc_info.forbid_lane_change_right = !task_.lc_info.forbid_lane_change_right;
+    task_.lc_info.forbid_lane_change_right = !task_.lc_info.forbid_lane_change_right; //禁止右变道
   } else if (msg->buttons[6] == 1) {
-    task_.is_under_ctrl = !task_.is_under_ctrl;
+    task_.is_under_ctrl = !task_.is_under_ctrl; //是否自动控制
   }
 }
 

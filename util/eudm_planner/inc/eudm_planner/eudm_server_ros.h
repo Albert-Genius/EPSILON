@@ -34,7 +34,7 @@ class EudmPlannerServer {
   using DcpLatAction = DcpTree::DcpLatAction;
 
   struct Config {
-    int kInputBufferSize{100};
+    int kInputBufferSize{100}; // 循环缓冲队列的长度
   };
 
   EudmPlannerServer(ros::NodeHandle nh, int ego_id);
@@ -61,7 +61,7 @@ class EudmPlannerServer {
 
   void JoyCallback(const sensor_msgs::Joy::ConstPtr &msg);
 
-  void Replan();
+  //void Replan();
 
   void PublishData();
 

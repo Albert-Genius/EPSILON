@@ -9,7 +9,7 @@
 #include "common/basics/tic_toc.h"
 #include "forward_simulator/multimodal_forward.h"
 #include "forward_simulator/onlane_forward_simulation.h"
-#include "semantic_map_manager/ros_adapter.h"
+#include "semantic_map_manager/semantic_map_server_ros.h"
 #include "semantic_map_manager/semantic_map_manager.h"
 #include "semantic_map_manager/visualizer.h"
 #include "sensor_msgs/Joy.h"

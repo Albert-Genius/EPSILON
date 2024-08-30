@@ -57,7 +57,7 @@ target_link_libraries(hkust_pl_smm
 )
 
 add_library(hkust_smm_ros
-    src/ros_adapter.cc
+    src/semantic_map_server_ros.cc
     src/visualizer.cc
 )
 target_link_libraries(hkust_smm_ros

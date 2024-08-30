@@ -1,4 +1,4 @@
-#include "semantic_map_manager/ros_adapter.h"
+#include "semantic_map_manager/semantic_map_server_ros.h"
 
 namespace semantic_map_manager {
 
@@ -18,6 +18,7 @@ void RosAdapter::Init() {
 }
 
 // ! DEPRECATED (@lu.zhang)
+#if 0
 void RosAdapter::ArenaInfoCallback(
     const vehicle_msgs::ArenaInfo::ConstPtr& msg) {
   ros::Time time_stamp;
@@ -29,6 +30,7 @@ void RosAdapter::ArenaInfoCallback(
     private_callback_fn_(*p_smm_);
   }
 }
+#endif
 
 void RosAdapter::ArenaInfoStaticCallback(
     const vehicle_msgs::ArenaInfoStatic::ConstPtr& msg) {

@@ -784,7 +784,7 @@ ErrorType EudmManager::ReselectByContext(const decimal_t stamp,
 
 ErrorType EudmManager::Run(
     const decimal_t stamp,
-    const std::shared_ptr<semantic_map_manager::SemanticMapManager>& map_ptr,
+    const std::shared_ptr<semantic_map_manager::SemanticMapManager>& map_ptr, /*interface injection*/
     const planning::eudm::Task& task) {
   LOG(WARNING) << std::fixed << std::setprecision(4)
                << "[Eudm]******************** RUN START: " << stamp

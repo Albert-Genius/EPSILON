@@ -66,7 +66,7 @@ class EudmPlannerMapAdapter : public EudmPlannerMapItf {
       bool *has_following_vehicle, common::Vehicle *following_vehicle,
       common::FrenetState *following_fs) override;
 
-  void set_map(std::shared_ptr<IntegratedMap> map_ptr);
+  void set_map(std::shared_ptr<IntegratedMap> map_ptr); // setter injection
 
   std::shared_ptr<IntegratedMap> map() { return map_; }
 

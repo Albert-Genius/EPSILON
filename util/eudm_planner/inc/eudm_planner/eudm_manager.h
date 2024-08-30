@@ -124,7 +124,7 @@ class EudmManager {
                                        const planning::eudm::Task& task);
 
   EudmPlanner bp_;
-  EudmPlannerMapAdapter map_adapter_;
+  EudmPlannerMapAdapter map_adapter_; //直接实例化
   decimal_t work_rate_{20.0};
 
   int ego_lane_id_;

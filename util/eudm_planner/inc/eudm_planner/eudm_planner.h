@@ -78,8 +78,8 @@ class EudmPlanner : public Planner {
   };
 
   struct ForwardSimAgent {
-    int id = kInvalidAgentId;
-    common::Vehicle vehicle;
+    int id = kInvalidAgentId; // id of the agent
+    common::Vehicle vehicle; // 车辆信息,主要是State信息
 
     // * lon
     OnLaneForwardSimulation::Param sim_param; // IDM参数
@@ -92,7 +92,7 @@ class EudmPlanner : public Planner {
     common::StateTransformer stf; // 存储福莱纳坐标系下的车道信息
 
     // * other
-    decimal_t lat_range;
+    decimal_t lat_range; // 横向搜索范围(eudm配置参数,2.2m)
   };
 
   struct ForwardSimAgentSet {
@@ -152,7 +152,7 @@ class EudmPlanner : public Planner {
 
   ErrorType RunOnce() override;
 
-  void set_map_interface(EudmPlannerMapItf* itf);
+  void set_map_interface(EudmPlannerMapItf* itf); // setter injection
   /**
    * @brief set desired velocity
    */
@@ -362,8 +362,8 @@ class EudmPlanner : public Planner {
   common::RssChecker::RssConfig rss_config_strict_as_front_;
   common::RssChecker::RssConfig rss_config_strict_as_rear_;
 
-  OnLaneForwardSimulation::Param ego_sim_param_;
-  OnLaneForwardSimulation::Param agent_sim_param_;
+  OnLaneForwardSimulation::Param ego_sim_param_; // 自车前向仿真参数
+  OnLaneForwardSimulation::Param agent_sim_param_; // 他车前向仿真参数
 
   decimal_t time_stamp_;
   int ego_id_;

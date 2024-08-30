@@ -119,8 +119,7 @@ void EudmPlannerServer::PlanCycleCallback()
   if (!has_updated_map) return;
 
   // 运行时注入地图依赖
-  auto map_ptr =
-      std::make_shared<semantic_map_manager::SemanticMapManager>(smm_);
+  auto map_ptr = std::make_shared<semantic_map_manager::SemanticMapManager>(smm_); // map的处理也比较核心,细节很多;和预测&决策交互很多
 
   decimal_t replan_duration = 1.0 / work_rate_;
   double stamp =

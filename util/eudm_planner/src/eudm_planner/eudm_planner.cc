@@ -230,17 +230,17 @@ ErrorType EudmPlanner::GetSurroundingForwardSimAgents(
 
     common::State state = psv.second.vehicle.state();
     // ~ If other vehicles' acc > 0, we assume constant velocity
+    // TODO: (@yuandong.zhao) 不知道为什么要做这个特殊处理???
     if (state.acceleration >= 0) {
       fsagent.sim_param.idm_param.kDesiredVelocity = state.velocity;
     } else {
-      decimal_t est_vel =
-          std::max(0.0, state.velocity + state.acceleration * sim_time_total_);
+      decimal_t est_vel = std::max(0.0, state.velocity + state.acceleration * sim_time_total_);
       fsagent.sim_param.idm_param.kDesiredVelocity = est_vel;
     }
 
     // * lat
-    fsagent.lat_probs = psv.second.probs_lat_behaviors;
-    fsagent.lat_behavior = psv.second.lat_behavior;
+    fsagent.lat_probs = psv.second.probs_lat_behaviors; // 更新该车的横向多模态行为概率分布
+    fsagent.lat_behavior = psv.second.lat_behavior; // 更新该车的概率最大的横向行为
 
     fsagent.lane = psv.second.lane;
     fsagent.stf = common::StateTransformer(fsagent.lane);
@@ -258,13 +258,13 @@ ErrorType EudmPlanner::RunEudm()
 {
   // * get relevant information
   common::SemanticVehicleSet surrounding_semantic_vehicles; // 周边动态障碍物(车辆)信息
+  // 关键车辆选择
   if (map_itf_->GetKeySemanticVehicles(&surrounding_semantic_vehicles) != kSuccess) {
     LOG(ERROR) << "[Eudm][Fatal]fail to get key semantic vehicles. Exit";
     return kWrongStatus;
   }
 
-  // 关键车辆选择
-  ForwardSimAgentSet surrounding_fsagents; // 记录前方关键车辆
+  ForwardSimAgentSet surrounding_fsagents; // 记录周边关键车辆
   GetSurroundingForwardSimAgents(surrounding_semantic_vehicles,
                                  &surrounding_fsagents);
 

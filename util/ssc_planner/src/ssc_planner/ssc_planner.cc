@@ -372,7 +372,8 @@ ErrorType SscPlanner::RunQpOptimization() {
   return kSuccess;
 }
 
-ErrorType SscPlanner::UpdateTrajectoryWithCurrentBehavior() {
+ErrorType SscPlanner::UpdateTrajectoryWithCurrentBehavior() 
+{
   int num_valid_behaviors = static_cast<int>(valid_behaviors_.size());
   if (num_valid_behaviors < 1) {
     return kWrongStatus;
@@ -380,7 +381,7 @@ ErrorType SscPlanner::UpdateTrajectoryWithCurrentBehavior() {
   bool find_exact_match_behavior = false;
   int index = 0;
   for (int i = 0; i < num_valid_behaviors; i++) {
-    if (valid_behaviors_[i] == ego_behavior_) {
+    if (valid_behaviors_[i] == ego_behavior_) { // 做一个有效性校验
       find_exact_match_behavior = true;
       index = i;
     }

@@ -276,7 +276,7 @@ class SemanticMapManager {
                                    const bool &is_high_quality,
                                    common::Lane *lane) const;
 
-  double time_stamp_{0.0};
+  double time_stamp_{0.0}; // 记录数据更新的时间戳
 
   decimal_t pred_time_ = 5.0;
   decimal_t pred_step_ = 0.2;
@@ -317,7 +317,7 @@ class SemanticMapManager {
   common::LaneNet whole_lane_net_;
   common::LaneNet surrounding_lane_net_;
   common::SemanticLaneSet semantic_lane_set_;
-  common::SemanticBehavior ego_behavior_;
+  common::SemanticBehavior ego_behavior_; // 记录自车的行为
 
   // * open loop prediction only for collision checking for onlane mp
   std::unordered_map<int, vec_E<common::State>> openloop_pred_trajs_;

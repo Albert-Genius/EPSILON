@@ -218,17 +218,19 @@ struct ProbDistOfLatBehaviors {
  */
 
 struct SemanticBehavior {
-  LateralBehavior lat_behavior;
-  LongitudinalBehavior lon_behavior;
-  Lane ref_lane;
-  decimal_t actual_desired_velocity{0.0};
 
-  vec_E<vec_E<Vehicle>> forward_trajs;
-  std::vector<LateralBehavior> forward_behaviors;
-  vec_E<std::unordered_map<int, vec_E<Vehicle>>> surround_trajs;
+  LateralBehavior lat_behavior; // 横向行为
+  LongitudinalBehavior lon_behavior; // 纵向行为
+  Lane ref_lane;  // 参考车道
+  decimal_t actual_desired_velocity{0.0}; // 实际期望速度
 
-  State state;
+  vec_E<vec_E<Vehicle>> forward_trajs; // 前向轨迹: 指定横纵向行为之后,使用前向仿真生成的轨迹
+  std::vector<LateralBehavior> forward_behaviors; // ???
+  vec_E<std::unordered_map<int, vec_E<Vehicle>>> surround_trajs; // 周边车辆前向仿真轨迹
 
+  State state; // 当前状态
+
+public:
   SemanticBehavior() {
     lat_behavior = LateralBehavior::kLaneKeeping; // 初始横向行为设定为保持当前车道
     lon_behavior = LongitudinalBehavior::kMaintain; // 纵向行为设定为保持当前车速

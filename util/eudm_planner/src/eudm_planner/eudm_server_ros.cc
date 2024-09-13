@@ -99,21 +99,26 @@ void EudmPlannerServer::JoyCallback(const sensor_msgs::Joy::ConstPtr &msg)
   }
 }
 
-void EudmPlannerServer::Start() {
-  std::thread(&EudmPlannerServer::MainThread, this).detach();
-  task_.is_under_ctrl = true;
+void EudmPlannerServer::Start() 
+{
+  // 将this作为入参的作用是,创建的线程可以访问到当前对象中的成员变量
+  std::thread(&EudmPlannerServer::MainThread, this).detach(); // 创建独立线程
+  task_.is_under_ctrl = true; // 将标记设置为自动控制
 }
 
-void EudmPlannerServer::MainThread() {
+void EudmPlannerServer::MainThread() 
+{
   using namespace std::chrono;
   system_clock::time_point current_start_time{system_clock::now()};
   system_clock::time_point next_start_time{current_start_time};
-  const milliseconds interval{static_cast<int>(1000.0 / work_rate_)};
+  const milliseconds interval{static_cast<int>(1000.0 / work_rate_)}; // 决策周期为50ms
+
+  // main loop
   while (true) {
     current_start_time = system_clock::now();
     next_start_time = current_start_time + interval;
     PlanCycleCallback();
-    std::this_thread::sleep_until(next_start_time);
+    std::this_thread::sleep_until(next_start_time); //TODO:(@yuandong.zhao) 这种写法,运行周期要比interval长;不符合实时性要求,需要优化
   }
 }
 
@@ -126,22 +131,22 @@ void EudmPlannerServer::PlanCycleCallback()
   while (p_input_smm_buff_->try_dequeue(smm_)) {
     has_updated_map = true;
   }
-
   if (!has_updated_map) return;
 
   // 运行时注入地图依赖
   auto map_ptr = std::make_shared<semantic_map_manager::SemanticMapManager>(smm_); // map的处理也比较核心,细节很多;和预测&决策交互很多
 
-  decimal_t replan_duration = 1.0 / work_rate_;
-  double stamp =
-      std::floor(smm_.time_stamp() / replan_duration) * replan_duration;
+  decimal_t replan_duration = 1.0 / work_rate_; // 决策周期为50ms,即1秒内进行20次决策
+  double stamp = std::floor(smm_.time_stamp() / replan_duration) * replan_duration; // stamp对齐到决策周期(对duration取整)
+
   // 核心调用:行为决策
   if (bp_manager_.Run(stamp, map_ptr, task_) == kSuccess) {
     common::SemanticBehavior behavior;
     bp_manager_.ConstructBehavior(&behavior);
-    smm_.set_ego_behavior(behavior);
-  }
+    smm_.set_ego_behavior(behavior); // 将决策结果传递给地图管理器,再传递给ssc planner
+  } //TODO:(@yuandong.zhao) 如果决策失败,应该怎么处理?是否需要重试?是否需要发布一个错误消息?
 
+  // 将结果传递给ssc planner
   if (has_callback_binded_) {
     private_callback_fn_(smm_);
   }
